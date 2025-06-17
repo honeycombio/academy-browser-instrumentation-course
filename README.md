@@ -94,7 +94,7 @@ This cluster offers contextual, structured, and applied learning formats to driv
     - Learning Gap: Frontend teams often build components or microfrontends in isolation — even when they run in the same browser. When performance issues or bugs occur, engineers may lack visibility into how different pieces interact or affect one another. Tracing can help them spot latency introduced by one team’s module affecting another’s, debug coordination issues (e.g., race conditions, unhandled async flows), measure perceived user experience across multiple async frontend systems
     - Note: Show trace examples
 
-  **Video: Why Can’t I See My Full Trace? Fixing Instrumentation Gaps**
+- **Video: Why Can’t I See My Full Trace? Fixing Instrumentation Gaps**
   - Objectives:
     - Diagnose why a trace might not appear end-to-end in Honeycomb
     - Validate correct context propagation between frontend and backend
@@ -107,7 +107,7 @@ This cluster offers contextual, structured, and applied learning formats to driv
         3. Timing mismatch in span duration/nesting
         4. SDK initialized too late in the app lifecycle
 
-**Video: Adding HFO Custom Session IDs**
+- **Video: Adding HFO Custom Session IDs**
     - Objectives:
       - Override Honeycomb’s default session ID generator
       - Persist session IDs using browser storage
@@ -146,7 +146,7 @@ Note: These require a sample application written in Browser JS. We need to find 
 
 - **Lab: Adding Custom Attributes to Spans**  
     - Objective: Add user/feature-specific metadata  
-  **Example:**
+**Example code snippet:**
   ```javascript
   import { trace } from '@opentelemetry/api';
   const span = trace.getSpan(trace.context.active());
@@ -156,7 +156,7 @@ Note: These require a sample application written in Browser JS. We need to find 
   }
 
 ## Resources
-{{<image src=".github/assets/HFO instrumentation setup.png">}}
+<image src=".github/assets/HFO instrumentation setup.png">
 
 https://www.honeycomb.io/blog/manage-your-session-id-honeycombs-web-sdk
 http://docs.google.com/presentation/d/19wC7RbvY6hHguLpcvNx2ofnKubzAUUC-ZGsQdZdMCXA/edit#slide=id.g331e3030cc4_1_307
