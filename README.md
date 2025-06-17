@@ -114,6 +114,7 @@ This cluster offers contextual, structured, and applied learning formats to driv
       - Align session attribution with their app’s concept of a user or visitor session
       - Confirm that spans and traces share session context across interactions
     - Learning Gap: Honeycomb automatically generates session IDs in the Web SDK, but some customers need more control (e.g., to align with app auth sessions or marketing campaigns); others don’t realize how powerful consistent session attribution can be for tracking user flows; and many fail to persist session IDs correctly across reloads or tabs, which fragments traces. W/o deliberate session ID management, it's hard to reconstruct full user journeys, analyze retention or conversion, and debug flakiness tied to multi-page flows.
+
 **Example code snippet:**
 ```javascript
 import { WebSDK } from '@honeycombio/web-sdk';
@@ -146,6 +147,7 @@ Note: These require a sample application written in Browser JS. We need to find 
 
 - **Lab: Adding Custom Attributes to Spans**  
     - Objective: Add user/feature-specific metadata  
+
 **Example code snippet:**
   ```javascript
   import { trace } from '@opentelemetry/api';
