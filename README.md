@@ -1,4 +1,4 @@
-# Content Cluster Outline Q3 2025: Frontend Observability in Honeycomb
+# Content Cluster Outline Q3 2025: Frontend Observability for Web
 
 ## Content
 
@@ -45,14 +45,16 @@ This cluster offers contextual, structured, and applied learning formats to driv
 
 ### Social/Contextual Learning: Motivation
 
-- **Video: Why Frontend Observability Matters**
+- **Video: Why Frontend Observability**
   - Objectives:
-    - Describe why frontend telemetry completes the observability picture — what problems will they be able to solve, and how can they solve them with HFO?
+    - Describe why frontend telemetry completes the observability picture — what problems will they be able to solve, and how can they solve them with HFO? [Answer: Fullstack tracing!]
     - Identify problems they will be able to solve using Honeycomb FO (e.g., browser latency, missing visibility).
   - Use Case: Frontend developer sees latency but has no browser-side visibility. 
     - Some work to be done: This use case needs to be flushed out with details that'll really help illustrate the problem for users.
     - Each use case/example we present: It should shape the problem for them (even if they didn't know it existed), ensure they understand the problem, *and* won't overwhelm them. The focus is on the solution, not the problem. 
   - Learning Gap: FE teams are even more distanced from observability than their BE counterparts.
+  - Learning Gap: Make sure you understand the end-to-end value, the fullstack value is the real magic.
+  - CTA: End with the end-the-end value.
 
 ### Formal Learning: Core Concepts
 
@@ -84,7 +86,6 @@ This cluster offers contextual, structured, and applied learning formats to driv
   - Included in atuomatic instrumentation and should be mentioned:
     - Core Web Vitals instrumentation
     - Document load and navigation timing instrumentation
-    - Error Capture instrumentation (with unpacked JS traces)
     - Click instrumentation
     - Context Enrichment: Browser and device attributes (e.g., user agent, page location, browser type)
     - Attributes:
@@ -94,14 +95,7 @@ This cluster offers contextual, structured, and applied learning formats to driv
         - Browser attributes
         - Feature flags
 
-- **Video: Understanding Dependencies Between Frontend Services**
-  - Objectives:
-    - Reveal frontend component interactions via instrumentation and traces
-    - Identify interactions and timing between frontend elements
-    - Apply understanding to performance tuning and debugging
-  - Use Case: Hey! I'm a FE engineer who was just told "this Browser app is yours now!" and I have no idea what the services do. This video demonstrates how adding automatic instrumentation then viewing the stack traces in Honeycomb helps them understand the interactions and timing of their FE services. 
-
-- **Video: Why Can’t I See My Full Trace?**
+- **Video: Can't See Your Full Trace? How Context Propagation Works** 
   - Objectives:
     - Diagnose missing trace segments or full traces
     - Validate correct context propagation between frontend and backend
@@ -110,14 +104,19 @@ This cluster offers contextual, structured, and applied learning formats to driv
     1. Honeycomb SDK configuration and troubleshooting
     2. High-level OpenTelemetry context propagation strategy
   - Use Case: I'm an FE engineering who added automatic instrumentation, but... I! can't! see! my! full! trace! and I don't understand why. What can I look into to clarify my understanding of instrumentation?
+  - Include: Passing context around properly throughout the frontend... Means you need to propagate trace IDs correctly.
+  - This is a trade header, this is how propagation works, this is context between services.
+  - Must use good, real-world examples!
+    - Empahsize their mental model: Think of it as a Swiss-Army knife. If you want it to look like this, here's an example of a thing that DOES do that.  
 
-- **Video: Defining a Session for Your App**
+- **Video: Defining a Session for Your App** 
   - Objectives:
     - Override Honeycomb’s default session ID generator
     - Persist session IDs using browser storage
     - Align session attribution with their app’s user or visitor session model
     - Confirm shared session context across interactions
   - Note: Address logic for authenticated vs anonymous users
+  - Note: Really, the goal here is: Give folks tool to hone their telemetry.
 
 ```javascript
 import { WebSDK } from '@honeycombio/web-sdk';
@@ -132,10 +131,10 @@ new WebSDK({
 
 - **Video: Adding Custom Attributes to Spans**
   - Objectives:
-    - Explain why custom attributes matter for observability
-    - Show three levels of customization: basic user info, feature flags, and app-specific context
+    - Show three examples of customization: basic user info, feature flags, and app-specific context
     - Demonstrate how to safely add attributes using OpenTelemetry
     - Emphasize naming consistency and privacy considerations
+    - Explain why custom attributes matter for observability - this might be hard to explain in the abstract.
 - **Example:** `user.id`, `feature.flag`, `checkout.step`
 
 - **Blog/Doc: Best Practices for Frontend Tracing**
@@ -145,6 +144,7 @@ new WebSDK({
       - Initialize early
       - Propagate trace context
       - Configure baggage
+      - Use semantic conventions
 
 ### Application Learning: Hands-on Labs
 
