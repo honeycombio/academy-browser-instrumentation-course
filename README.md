@@ -2,13 +2,13 @@
 
 ## Content
 
-This self-paced, beginner-friendly cluster of activities teaches web developers and DevOps engineers how to instrument frontend applications for observability using Honeycomb’s JavaScript SDKs and OpenTelemetry.
+This self-paced, beginner-friendly cluster of activities teaches web developers and DevOps engineers how to instrument frontend applications for observability using Honeycomb’s Web JavaScript SDKs and OpenTelemetry.
 
-Learners will build confidence in understanding event-based telemetry, setting up client-side tracing, and connecting frontend spans to backend traces. Content is delivered via short videos (formal learning), hands-on labs (application), and reference PDFs.
+Learners will build confidence in understanding browser telemetry, setting up client-side tracing, and connecting frontend spans to backend traces. Content is delivered via short videos (formal learning), hands-on labs (application), and blogs [maybe].
 
 - **Format:** Multi-modal: Videos, labs, blogs [maybe]
 - **Prerequisites:**
-  - Familiarity with Browser-Based JavaScript: Understanding of how to write and run JavaScript in a browser environment (e.g., using console.log, fetch, event handlers).
+  - Familiarity with Browser-Based JavaScript: Understanding of how to write and run JavaScript in a browser environment.
   - Basic Web Application Structure: Awareness of how Single Page Applications (SPAs) or multi-page apps are structured (e.g., what’s in index.html, main.js, use of npm or bundlers like Vite/Webpack).
   - Understanding of HTTP Requests: Basic knowledge of how frontend apps make API requests using fetch or XMLHttpRequest.
   - Access to Modify and Deploy Frontend Code: Learners must have access to a codebase where they can install packages, edit source files, and observe trace data.
@@ -20,7 +20,7 @@ Learners will build confidence in understanding event-based telemetry, setting u
 Frontend engineers are often familiar with performance monitoring but unfamiliar with distributed tracing and high-cardinality event telemetry.
 
 **Evidence of Need:**
-Many Honeycomb customers use backend tracing but haven’t adopted frontend telemetry, despite performance blind spots starting at the browser.
+Many Honeycomb customers use backend tracing but haven’t adopted frontend tracing/o11y, despite performance blind spots starting at the browser.
 
 ## Problem & Solution
 
@@ -28,7 +28,7 @@ Many Honeycomb customers use backend tracing but haven’t adopted frontend tele
 Frontend developers and DevOps engineers lack clear, actionable guidance on getting started with observability in their web apps using Honeycomb.
 
 **Solution:**
-This cluster offers contextual, structured, and applied learning formats to drive skill adoption.
+This cluster offers contextual, structured, and applied learning formats to drive HFO instrumentation skill adoption.
 
 ## Evaluation Plan
 
@@ -49,7 +49,7 @@ This cluster offers contextual, structured, and applied learning formats to driv
   - Objectives:
     - Describe why frontend telemetry completes the observability picture — what problems will they be able to solve, and how can they solve them with HFO?
     - Identify problems they will be able to solve using Honeycomb FO (e.g., browser latency, missing visibility).
-  - Use Case: Dev sees latency but has no browser-side visibility.
+  - Use Case: Frontend developer sees latency but has no browser-side visibility. 
     - Some work to be done: This use case needs to be flushed out with details that'll really help illustrate the problem for users.
     - Each use case/example we present: It should shape the problem for them (even if they didn't know it existed), ensure they understand the problem, *and* won't overwhelm them. The focus is on the solution, not the problem. 
   - Learning Gap: FE teams are even more distanced from observability than their BE counterparts.
@@ -72,26 +72,34 @@ This cluster offers contextual, structured, and applied learning formats to driv
     - Understand where trace context originates and is propagated
   - Activity: Trace a user click through the architecture
 
-- **Video: Automatic Instrumentation with Honeycomb SDKs + OpenTelemetry**
+- **Video: Automatic Instrumentation with Honeycomb Web SDKs + OpenTelemetry**
   - Objectives:
-    - Describe types of telemetry automatically collected (traces, spans, metrics, logs)
+    - Describe types of telemetry automatically collected: traces, spans, metrics, logs. This is SUPER brief and should center FE data in these forms, but we do have lots of content on telemetry types, so we don't need to reinvent the wheel.
     - Explain how automatic instrumentation reduces setup effort
-    - Verify whether automatic instrumentation is working correctly
+        - Automatic context propgation with backend spans* but they should double-check for headers!
+        - Automatic session ID* but this should also be double-checked, and can be customized!
+        - Uses OTel semantic conventions
+    - Verify whether automatic instrumentation is working correctly: Can we see traces in Honeycomb?
     - Emphasize the need to double-check for (and/or add) trace propagation headers and baggage for session ID
-  - Include:
-    - Performance Metrics: Core Web Vitals
-    - Lifecycle Events: Document load and navigation timing
-    - Network Requests: HTTP fetch and XMLHttpRequest calls
-    - Error Capture: Global JS errors and uncaught exceptions
-    - Context Enrichment: Browser and device attributes (e.g., user agent, screen size)
-    - Session Attribution: Automatic session ID assignment with customization options
+  - Included in atuomatic instrumentation and should be mentioned:
+    - Core Web Vitals instrumentation
+    - Document load and navigation timing instrumentation
+    - Error Capture instrumentation (with unpacked JS traces)
+    - Click instrumentation
+    - Context Enrichment: Browser and device attributes (e.g., user agent, page location, browser type)
+    - Attributes:
+        - HTTP methods, URLs, timings according to HTTP semconv
+        - Resource timings
+        - Errors
+        - Browser attributes
+        - Feature flags
 
 - **Video: Understanding Dependencies Between Frontend Services**
   - Objectives:
     - Reveal frontend component interactions via instrumentation and traces
     - Identify interactions and timing between frontend elements
     - Apply understanding to performance tuning and debugging
-  - Use Case: SPA/microfrontend coordination
+  - Use Case: Hey! I'm a FE engineer who was just told "this Browser app is yours now!" and I have no idea what the services do. This video demonstrates how adding automatic instrumentation then viewing the stack traces in Honeycomb helps them understand the interactions and timing of their FE services. 
 
 - **Video: Why Can’t I See My Full Trace?**
   - Objectives:
@@ -101,6 +109,7 @@ This cluster offers contextual, structured, and applied learning formats to driv
   - Split into:
     1. Honeycomb SDK configuration and troubleshooting
     2. High-level OpenTelemetry context propagation strategy
+  - Use Case: I'm an FE engineering who added automatic instrumentation, but... I! can't! see! my! full! trace! and I don't understand why. What can I look into to clarify my understanding of instrumentation?
 
 - **Video: Defining a Session for Your App**
   - Objectives:
@@ -125,11 +134,11 @@ new WebSDK({
   - Objectives:
     - Explain why custom attributes matter for observability
     - Show three levels of customization: basic user info, feature flags, and app-specific context
-    - Demonstrate how to safely add attributes using OpenTelemetry API
+    - Demonstrate how to safely add attributes using OpenTelemetry
     - Emphasize naming consistency and privacy considerations
 - **Example:** `user.id`, `feature.flag`, `checkout.step`
 
-- **([Tentative] Blog: Best Practices for Frontend Tracing**
+- **Blog/Doc: Best Practices for Frontend Tracing**
   - Objective: Apply naming conventions and field clarity
     - **Best Practices:**
       - Use semantic names
@@ -139,8 +148,8 @@ new WebSDK({
 
 ### Application Learning: Hands-on Labs
 
-- **Lab: Setup Honeycomb TypeScript SDK and OTel SDK [note: we need a FE app]**
-  - Objective:** Instrument app with Honeycomb TypeScript SDK and OTel Web SDK
+- **Lab: Setup Honeycomb Browser Web SDK [note: we need a FE app - Meminator, pending DevRel support to stand it up]**
+  - Objective:** Instrument app with Honeycomb Web SDK & OTel
     - **Best Practices:**
       - Initialize early
       - Use a stable `service.name`
@@ -181,3 +190,4 @@ if (span) {
 
 https://www.honeycomb.io/blog/manage-your-session-id-honeycombs-web-sdk
 http://docs.google.com/presentation/d/19wC7RbvY6hHguLpcvNx2ofnKubzAUUC-ZGsQdZdMCXA/edit#slide=id.g331e3030cc4_1_307
+https://www.figma.com/slides/fqURh1CXdoxkJGTjaIrK3x/Instrumentation-in-poodle-js-presentation?node-id=1-1299&t=zZlrMfEGjVQAPLwA-0 
