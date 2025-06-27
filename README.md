@@ -1,4 +1,4 @@
-# Content Cluster Outline Q3 2025: Frontend Observability for Web
+# Content Cluster Outline Q3 2025: Frontend Observability for Web: Instrumentation
 
 ## Content
 
