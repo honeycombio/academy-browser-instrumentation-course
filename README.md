@@ -137,6 +137,39 @@ new WebSDK({
     - Explain why custom attributes matter for observability - this might be hard to explain in the abstract.
 - **Example:** `user.id`, `feature.flag`, `checkout.step`
 
+- **Video: Observe React Routers with Custom Span Processors
+  - Objectives:
+    - Explain what custom span processors do in OpenTelemetry.
+    - Track React Router navigation events using instrumentation.
+    - Implement a custom span processor to enrich route spans.
+    - Send and view custom spans in Honeycomb.
+    - Use trace data to diagnose and improve route performance.
+- **Example:** (Also, click [here](https://github.com/honeycombio/honeycomb-opentelemetry-web/blob/main/packages/honeycomb-opentelemetry-web/examples/hello-world-react-create-app/src/reactRouterSpanProcessor.ts)!)
+```js
+try {
+  const sdk = new HoneycombWebSDK({
+    debug: true,
+    apiKey: 'api-key-goes-here',
+    serviceName: 'hny-web-distro-example:hello-world-react-create-app',
+    webVitalsInstrumentationConfig: {
+      vitalsToTrack: ['CLS', 'FCP', 'INP', 'LCP', 'TTFB'],
+      inp: { includeTimingsAsSpans: true },
+    },
+    instrumentations: [
+      getWebAutoInstrumentations({
+        '@opentelemetry/instrumentation-xml-http-request': configDefaults,
+        '@opentelemetry/instrumentation-fetch': configDefaults,
+        '@opentelemetry/instrumentation-document-load': configDefaults,
+      }),
+    ], // add automatic instrumentation
+    spanProcessors: [new ReactRouterSpanProcessor({ router })],   <------
+  });
+  sdk.start();
+} catch (err) {
+  console.error(err);
+}
+```
+
 - **Blog/Doc: Best Practices for Frontend Tracing**
   - Objective: Apply naming conventions and field clarity
     - **Best Practices:**
