@@ -8,44 +8,65 @@
 
 ---
 
-## Interactive Audio Hotspots
+# Interactive Audio Hotspots: Meminator Web SDK Architecture
 
-### 1. User Interaction
-**Diagram Element:** A user clicking a button on a webpage.  
-**Audio:** "When a user interacts with your application—like clicking a button or navigating to a new page—these actions trigger events in the browser. The Honeycomb Web SDK captures these interactions to initiate spans that represent the start of a trace."
+# Interactive Audio Hotspots: Meminator Web SDK Architecture
 
-### 2. Honeycomb Web SDK Initialization
-**Diagram Element:** JavaScript code snippet initializing the Honeycomb Web SDK.  
-**Audio:** "The Honeycomb Web SDK initializes early in your application's lifecycle, setting up automatic instrumentation for various browser events. This includes capturing Core Web Vitals, document load times, and user interactions, all structured as spans."
+## 1. User Interaction
+**Diagram Element:** User clicking the "Go" button in the Meminator React frontend.  
+**Audio:** "When a user clicks the 'Go' button or enters custom text in Meminator, these actions trigger DOM events in the browser. Think of observability as adding a 'flight recorder' to your web app—it captures what users do so you can understand how your app behaves in the real world. The Honeycomb Web SDK automatically detects these interactions and starts creating what we call 'spans'—like breadcrumbs that show the journey of each user action."
 
-### 3. OpenTelemetry Instrumentation
-**Diagram Element:** Integration point between the Honeycomb Web SDK and OpenTelemetry libraries.  
-**Audio:** "Under the hood, the Honeycomb Web SDK leverages OpenTelemetry's JavaScript libraries to standardize the collection of telemetry data. This ensures compatibility and flexibility in how data is captured and processed."
+## 2. Honeycomb Web SDK Initialization  
+**Diagram Element:** SDK initialization layer wrapping the Meminator React frontend component.  
+**Audio:** "The Honeycomb Web SDK is like adding a monitoring system to your React app. When Meminator loads, the SDK automatically sets up instrumentation—that's a fancy word for 'watching what happens.' It tracks page loads, button clicks, API calls, and even errors. The best part? You don't need to manually add tracking code everywhere—the SDK handles most of it automatically."
 
-### 4. Span Creation and Context Propagation
-**Diagram Element:** Flowchart showing spans being created and context (trace IDs) being propagated.  
-**Audio:** "Each captured event is transformed into a span, a fundamental unit of work in tracing. The SDK manages context propagation, linking spans together using trace IDs to form a complete trace across different parts of your application."
+## 3. What is OpenTelemetry?
+**Diagram Element:** OTel WebSDK diamond component connected to the React frontend.  
+**Audio:** "You might wonder: what's OpenTelemetry? Think of it as the 'language' that different monitoring tools speak. The Honeycomb Web SDK uses OpenTelemetry under the hood, which means your traces can connect seamlessly from your React frontend to your backend services—even if they use different programming languages. It's like having a universal translator for your entire application stack."
 
-### 5. Exporter Configuration
-**Diagram Element:** Configuration settings for exporting data, including API keys and endpoints.  
-**Audio:** "The exporter is configured with your Honeycomb API key and dataset information. It handles batching and sending spans to the designated endpoint, ensuring that your telemetry data reaches Honeycomb securely and efficiently."
+## 4. Creating Spans for User Actions
+**Diagram Element:** Visual representation of a span timeline showing "Go button click" as the root span.  
+**Audio:** "When you click 'Go' in Meminator, the SDK creates what's called a 'span'—think of it as a stopwatch that measures how long something takes. This first span represents the user's action and becomes the 'root' of a trace. A trace is like a family tree showing everything that happens because of that one button click."
 
-### 6. OpenTelemetry Collector (Optional)
-**Diagram Element:** An intermediary service between the browser and Honeycomb's ingest endpoint.  
-**Audio:** "Optionally, you can route telemetry data through the OpenTelemetry Collector. This adds a layer of abstraction, allowing for additional processing, filtering, or routing before data reaches Honeycomb."
+## 5. HTTP Requests and Context Propagation
+**Diagram Element:** HTTP request arrows from React frontend to backend services, labeled with trace IDs and HTTP headers.  
+**Audio:** "Here's where it gets interesting. When your React app makes API calls to fetch images or generate memes, the SDK automatically adds special headers to those requests—like a tracking number on a package. This 'trace context' contains a unique ID that connects your frontend click to whatever happens in the backend. It's how we can follow the complete journey of a user's action through your entire system."
 
-### 7. Honeycomb Ingest Endpoint
-**Diagram Element:** Honeycomb's API endpoint receiving telemetry data.  
-**Audio:** "The Honeycomb ingest endpoint receives the structured telemetry data, where it's stored and made available for querying and visualization in the Honeycomb UI."
+## 6. Backend Service Integration
+**Diagram Element:** Three distinct backend service boxes (Image, Phrase, Composition) with interconnecting arrows.  
+**Audio:** "As Meminator calls different backend services—one for images, one for text, one for composition—that same trace ID flows through each service. This creates a complete picture: you can see not just that a meme generation was slow, but exactly which service caused the delay. However, this only works if your backend services are configured to read and forward those trace headers."
 
-### 8. Honeycomb UI and Querying
-**Diagram Element:** Screenshot of Honeycomb's UI showing a trace view.  
-**Audio:** "Within Honeycomb, you can explore traces to understand the flow of user interactions through your application. The UI provides powerful querying capabilities to dissect and analyze performance bottlenecks or errors."
+## 7. When Things Go Wrong
+**Diagram Element:** Error icon connected to a span showing failed API call with error details.  
+**Audio:** "Real-world applications have errors and failures. When something goes wrong in Meminator—like an image service being down or a network timeout—the SDK captures these errors as part of the trace. Instead of just seeing 'meme generation failed,' you can see exactly where and why it failed, making debugging much easier."
 
-### 9. Custom Instrumentation Points
-**Diagram Element:** Highlighted areas in code where developers can add custom spans or attributes.  
-**Audio:** "Beyond automatic instrumentation, you can add custom spans and attributes to capture domain-specific information. This enriches your traces with context that's meaningful to your application's behavior."
+## 8. Exporter Configuration
+**Diagram Element:** Configuration layer between the OTel WebSDK and Collector, showing API key and endpoint settings.  
+**Audio:** "The exporter is like the shipping department for your trace data. It's configured with your Honeycomb API key and knows where to send the telemetry data. The SDK batches this data efficiently, so it doesn't impact your app's performance—users won't notice the monitoring is there."
 
-### 10. Session and User Context Management
-**Diagram Element:** Mechanism showing how session IDs and user information are attached to spans.  
-**Audio:** "Managing session and user context is crucial for correlating events. The SDK allows you to define how session IDs are generated and propagated, ensuring that related spans are grouped appropriately."
+## 9. Performance Considerations
+**Diagram Element:** Performance meter showing minimal overhead, with toggle switches for sampling and filtering.  
+**Audio:** "A common concern with frontend monitoring is performance impact. The Honeycomb Web SDK is designed to be lightweight and uses techniques like sampling—only capturing a percentage of traces in high-traffic scenarios—and batching to minimize overhead. Your Meminator app will perform just as well with observability as without it."
+
+## 10. React Router Integration and Page Navigation
+**Diagram Element:** Router layer within the React frontend showing route transitions, with spans for navigation events.  
+**Audio:** "When users navigate between different pages in Meminator—like going from the home page to the meme gallery—React Router handles these transitions. The SDK automatically creates spans for route changes, so you can track page load times, see which pages users visit most, and identify slow navigation patterns."
+
+## 11. Custom Instrumentation Points
+**Diagram Element:** Plus (+) symbols at specific locations in React frontend with dotted lines to custom span boxes.  
+**Audio:** "While automatic instrumentation covers the basics, you can add custom spans for business-specific events. In Meminator, you might want to track how long image selection takes, which meme templates are most popular, or user preferences. Adding custom spans is simple—just a few lines of code using the OpenTelemetry API."
+
+## 12. Session and User Context Management
+**Diagram Element:** Session Context box above the React frontend, connecting to multiple spans across services.  
+**Audio:** "Understanding user behavior requires connecting related activities. You can attach session IDs and user context to spans—like tagging all spans from a single user session. This lets you see patterns: how many memes does a typical user generate? Which features do they use most? This context turns individual traces into insights about user behavior."
+
+## 13. Common Troubleshooting Scenarios
+**Diagram Element:** Troubleshooting flowchart showing missing headers, broken traces, and debugging steps.  
+**Audio:** "Here are common issues you might encounter: missing trace headers mean your frontend and backend traces don't connect—check that your backend services are reading the 'traceparent' header. Broken traces often indicate network issues or service timeouts. The Honeycomb UI helps you identify these patterns quickly, showing you exactly where traces are breaking."
+
+## 14. Honeycomb Ingest and Visualization
+**Diagram Element:** Honeycomb Ingest endpoint connected to a UI mockup showing Meminator trace data.  
+**Audio:** "Finally, your trace data arrives at Honeycomb, where it's stored and made available for exploration. In the Honeycomb UI, you can see the complete flow of a meme generation—from button click through all backend services to final composition. You can filter by user sessions, compare performance across different browsers, and identify optimization opportunities. This is where your observability investment pays off: turning raw data into actionable insights."
+
+Note: Here is the diagram we'll use as a baseline, with some additions/changes.
+![](./assets/HFO instrumentation setup.png)
