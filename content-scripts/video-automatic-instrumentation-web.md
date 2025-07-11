@@ -8,6 +8,12 @@
 
 ---
 
+Notes:
+- Remember, they have to run `npm install` in their React folder first.
+- FE developers want to run and stop in development mode.
+- Consider various methods for importing API keys.
+
+
 ### [Visual] Title screen: "Automatic Instrumentation: See More with Less Setup"  
 **[Audio]**  
 Meet Jess — a frontend engineer who is working on a web application called Meminator. She wants to see full-stack traces in Honeycomb.  
