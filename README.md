@@ -137,7 +137,7 @@ new WebSDK({
     - Explain why custom attributes matter for observability - this might be hard to explain in the abstract.
 - **Example:** `user.id`, `feature.flag`, `checkout.step`
 
-- **Video: Observe React Routers with Custom Span Processors
+- **Video: Observe React Routers with Custom Span Processors**
   - Objectives:
     - Explain what custom span processors do in OpenTelemetry.
     - Track React Router navigation events using instrumentation.
