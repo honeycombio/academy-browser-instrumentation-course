@@ -38,7 +38,7 @@
 **[Audio]** "Here's where it gets powerful for frontend engineers: Your trace doesn't end when the fetch call starts. It connects to what happens next on the backend."
 
 **[Visual]** Highlight trace context: `trace_id`, `span_id`, `service.name`, user-defined fields.  
-**[Audio]** "Each event carries trace context, so when the user's button click triggers backend processing, they are stitched together into a single trace. That's full-stack tracing."
+**[Audio]** "Each event carries trace context, so when the user's button click triggers backend processing, they are stitched together into a single trace. That's end-to-end tracing."
 
 **[Visual]** Bullet points appearing on screen with checkmarks:
 • Traces give you one user's complete journey for each request 
