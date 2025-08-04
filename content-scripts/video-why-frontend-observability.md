@@ -43,7 +43,7 @@
 
 **[Visual]** Text overlay on light background: "Problems solved with fullstack tracing:" followed by animated bullet points:  
 - Slow page loads — find the exact bottleneck
-- Slow API calls - identify which service calls are failing and why
+- Failed API calls - identify which service calls are failing and why
 - Errors that break user flow - catch exceptions across your entire stack before users do
 **[Audio]** "With frontend observability, Jo can see what her users are doing, how the frontend application behaves, and how it all connects to the backend in a single trace."
 
