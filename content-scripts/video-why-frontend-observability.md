@@ -8,53 +8,47 @@
 
 (Note: A lot of the specific examples (e.g. names of features or spans) are from ChatGPT — I asked it to make my examples more specific and real, but was made without app code to actually refer to... it needs to be revised to be accurate to what Meminator's actually doing, but the gist is there!)
 
-**[Visual]** Title screen: Bold text on neutral background: "Why Frontend Observability Matters"  
+**[Visual]** Title screen: Jo, FE engineer, and the write-your-own-phrase feature of Meminator on screen.
 **[Audio]** "Meet Jo — a frontend engineer who's just pushed a new meme creation flow to production."
 
-**[Visual]** Jo at a dual-monitor setup. One screen shows a real analytics dashboard (conversion funnel view), the other shows a code editor. A notification pops up.  
-**[Audio]** "At first, everything looks fine. The page loads, the button appears. But minutes later, meme creations plummet — and support tickets start rolling in."
+**[Visual]** Jo at a dual-monitor setup. One screen shows a real analytics dashboard (performance by URLs view or similar), the other shows a code editor and browser with Meminator open. A notification pops up.  
+**[Audio]** "At first, everything looks fine. The page loads, users can type in a phrase, the 'GO' button appears. But minutes later, meme creations plummet — and support tickets start rolling in."
 
-**[Visual]** Jo opens a team messaging app. Snippets from customer support appear: 'Meming page keeps freezing.' 'I click the button and nothing happens.'  
-**[Audio]** "Reports say the meming page is freezing, or worse, the "go" button does nothing."
+**[Visual]** Jo opens her team messaging app. Snippets from customer support appear: 'Meming page keeps freezing.' 'I type in my phrase, click the button, and nothing happens.'  
+**[Audio]** "Reports say the meming page is freezing, or worse, the button does nothing."
 
 **[Visual]** Jo opens DevTools. Network tab shows a handful of API calls, all green. Lighthouse audit reads 'Performance: 92'. A Core Web Vitals panel is visible.  
-**[Audio]** "Jo checks the frontend tools she trusts: no obvious errors, good performance scores. So... why are users stuck?"
+**[Audio]** "Jo checks the frontend tools she trusts: no obvious errors, good performance scores. It works when she tests it. So... why are users stuck?"
 
-**[Visual]** Cut to a side-by-side view: backend trace data on the left, logs on the right. Traces show a fast response time from [name of the relevant service as it's written in the app].  
-**[Audio]** "The backend shows clean logs and successful traces. From the moment the request hits the server, everything runs smoothly."
+**[Visual]** Cut to Honeycomb to view backend trace data. Traces show a fast response time from `backend-for-frontend`.  
+**[Audio]** "The backend shows successful traces. From the moment the request hits the server, everything runs smoothly."
 
-**[Visual]** Jo leans back, visibly frustrated. She rubs her temples, then returns to the keyboard.  
-**[Audio]** "But Jo knows something’s off — and she has no visibility into what’s really happening before that request reaches the server."
+**[Visual]** Jo leans back, visibly frustrated. She rubs her temples, then returns to the keyboard. 
+**[Audio]** "But Jo knows something’s off and she has no visibility once the request leaves the browser."
 
-**[Visual]** Montage: A third-party script loading slowly, an unresponsive click handler, a missed navigation state change — all with no trace context.  
+**[Visual]** Montage: From RUM tool: A third-party script loading slowly, an unresponsive click handler — all with no trace context.  
 **[Audio]** "Is a third-party script delaying the click event? Did a single-page app route change break state? Without full visibility, she’s flying blind."
 
-**[Visual]** Honeycomb UI showing a trace with no frontend spans — only backend service names and durations.  
+**[Visual]** Honeycomb UI showing a trace with no frontend spans — only backend service names and durations. 
 **[Audio]** "Traces help, but we can only see what's happening in the backend. There’s nothing showing what happened in the browser..."
 
-**[Visual]** Jo installs the Honeycomb Web SDK. Rebuilds and refreshes her app. Now the trace loads in full: spans for click, document load, and XHR.  
-**[Audio]** "Then Jo adds frontend tracing. Now the full picture emerges."
+**[Visual]** Jo installs the Honeycomb Web SDK. Rebuilds and refreshes her app. Now the trace loads in full: spans for click, document load, and fetch.  
+**[Audio]** "Then Jo adds frontend tracing in Honeycomb. Now the full picture emerges. We can use Honeycomb to debug our application in production because we, as developers, can't always anticipate how a user will break our application."
 
-**[Visual]** Honeycomb UI trace view: spans labeled according to the app, ordered top-down with durations, attributes panel open.  
-**[Audio]** "She sees the trace begin with a user click, tagged with the page URL and user agent. Then a navigation timing span shows a delay in document load. Finally, an XHR span captures the API call — all stitched together!" 
+**[Visual]** Honeycomb UI full-stack trace view: service names and span names properly labeled, ordered top-down with durations, attributes panel open. [Note On-Screen: Sometimes the click is its own trace. What you're most interested in is the `HTTP POST`.] 
+**[Audio]** "Now that we've instrumented the frontend, we see traces with errors. Here's an example. She sees the trace begin with a user click, containing the user agent and other useful attributes. Oh! It looks like there is an error marked on some of the the spans in this dataset... " 
 
-**[Visual]** Jo opens the span attributes panel. Keys like `session.id`, `user.role`, and `feature.flag` are clearly labeled with values.  
-**[Audio]** "Jo drills into the click span and sees useful context — session ID, user role, even the feature flag the user was bucketed into."
-
-**[Visual]** Jo clicks the `documentLoad` span and expands a child span labeled `analytics.js`. Duration: []  
-**[Audio]** "She opens the document load span and spots a delay — caused by a third-party analytics script blocking the render."
-
-**[Visual]** Code editor open. Jo comments out a script include, pushes a fix. Trace reloads in Honeycomb: no delay.  
-**[Audio]** "She isolates the delay, removes the blocking script, and confirms the improvement in Honeycomb."
+**[Visual]** Jo reviews spans in the failed trace, and clicks on "spans with errors" button, and she can go to the last span with errors by clicking the up arrow from the first span. 
+**[Audio]** "She explores the attributes of this span by searching for the word 'exception.' Aha! Now she sees that the user fed in a phrase that contained an exclaimation point, which caused the service to fail. Now she knows the backend should be fixed - it needs to sanitize its input before attempting to render it."
 
 **[Visual]** Text overlay on light background: "Problems solved with fullstack tracing:" followed by animated bullet points:  
-- Page loads are slow — pinpoint the frontend bottleneck  
-- Users drop off — identify where interaction broke  
-- Errors spike — trace them across the stack  
-**[Audio]** "With frontend observability, you see what users do, what the browser does, and how it all connects to the backend."
+- Slow page loads — find the exact bottleneck
+- Failed API calls - identify which service calls are failing and why
+- Errors that break user flow - catch exceptions across your entire stack before users do
+**[Audio]** "With frontend observability, Jo can see what her users are doing, how the frontend application behaves, and how it all connects to the backend in a single trace."
 
-**[Visual]** Jo glances at her trace, leans back with a smile. A teammate behind her nods, impressed.  
-**[Audio]** "Jo can finally build with confidence, knowing that if something breaks, she’ll see exactly where and why."
+**[Visual]** Jo smiles.
+**[Audio]** "She can finally build with confidence, knowing that if something breaks, she’ll see exactly where and why."
 
 **[Visual]** Fullscreen text: "Frontend observability completes your traces"  
-**[Audio]** "Because fullstack observability isn’t just for backend engineers; it’s for everyone who wants to understand user experience."
+**[Audio]** "Because fullstack observability isn’t just for backend engineers; it’s for everyone who wants to understand all service interactions that make up the full user experience."
