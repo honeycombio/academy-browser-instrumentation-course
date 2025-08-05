@@ -11,7 +11,7 @@
 **[Audio]** "Let's talk telemetry. Each type gives you a different lens into your application, and traces can solve problems you didn't know you could solve."
 
 **[Visual]** Trace: Honeycomb UI showing a full trace with frontend and backend spans.
-**[Audio]** "Traces can help you answer those questions. A trace is a complete record of one user's journey through your application. Jo, a frontend developer who's working on Meminator—an app that generates memes—knows that, sometimes, when a user enters a phrase and clicks 'GO', they get a broken picture. With full-stack tracing, Jo can see exactly where her app crashes."
+**[Audio]** "Traces can help you answer those questions. A trace is a complete record of a single interaction a user has with your application. Jo, a frontend developer who's working on Meminator—an app that generates memes—knows that, sometimes, when a user enters a phrase and clicks 'GO', they get a broken picture. With full-stack tracing, Jo can see exactly where her app crashes."
 
 **[Visual]** Span anatomy breakdown: span ID, name, start time, duration, attributes like user.id and page URL.  
 **[Audio]** "A span is one unit of work within that trace — like a click, a render, or an API call. Each span captures when it started, how long it took, and key context about what was happening."
