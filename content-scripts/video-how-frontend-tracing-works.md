@@ -11,19 +11,19 @@
 **[Audio]** "Let's talk telemetry. Each type gives you a different lens into your application, and traces can solve problems you didn't know you could solve."
 
 **[Visual]** Trace: Honeycomb UI showing a full trace with frontend and backend spans.
-**[Audio]** "Traces can help you answer those questions. A trace is a complete record of a single interaction a user has with your application. Jo, a frontend developer who's working on Meminator—an app that generates memes—knows that, sometimes, when a user enters a phrase and clicks 'GO', they get a broken picture. With full-stack tracing, Jo can see exactly where her app crashes."
+**[Audio]** "Traces can help you answer those questions. A trace is a complete record of a single interaction a user has with your application. Jo, a frontend developer who's working on Meminator—an app that generates memes—knows that, sometimes, when a user enters a phrase and clicks 'GO', they get a broken picture. With end-to-end tracing, Jo can see exactly where her app crashes."
 
 **[Visual]** Span anatomy breakdown: span ID, name, start time, duration, attributes like user.id and page URL.  
 **[Audio]** "A span is one unit of work within that trace — like a click, a render, or an API call. Each span captures when it started, how long it took, and key context about what was happening."
 
 **[Visual]** Browser dev events labeled: click, document load, fetch. Mapping arrows to spans.  
-**[Audio]** "When you instrument with the Honeycomb Web SDK, those familiar browser events are automatically transformed into spans using OpenTelemetry."
+**[Audio]** "When you use the Honeycomb Web SDK, those familiar browser events are automatically transformed into trace spans using OpenTelemetry."
 
 **[Visual]** Honeycomb trace view: click → documentLoad → fetch → backend.  
-**[Audio]** "Those spans are linked together by context — and become a trace that tells a user's complete story, from a button click to the server's response."
+**[Audio]** "Those spans are linked together by context — and become a trace that tells a user's complete story."
 
 **[Visual]** JSON payload of telemetry: `name`, `startTime`, `endTime`, `attributes`. Side-by-side to span in Honeycomb.  Note: We derive duration by subtracting `startTime` from `endTime`.
-**[Audio]** "Behind every span is raw telemetry data, exported as OTLP: JSON payloads with timestamps, field names, and context. Honeycomb turns that into a visual timeline you can search, filter, and explore."
+**[Audio]** "Behind every span is raw telemetry data, exported as OTLP: JSON payloads with timestamps, named attributes, and context. Honeycomb turns that into a visual timeline you can search, filter, and explore."
 
 **[Visual]** Span detail panel showing structured telemetry attributes with user context. Go to View Events in Trace. 
 **[Audio]** "This is why structured telemetry matters: instead of diving into browser DevTools or trying to reproduce issues locally, you can ask questions like 'show me all slow meme generations for users on Chrome on a mobile phone.'"
@@ -38,11 +38,11 @@
 **[Audio]** "Here's where it gets powerful for frontend engineers: Your trace doesn't end when the fetch call starts. It connects to what happens next on the backend."
 
 **[Visual]** Highlight trace context: `trace_id`, `span_id`, `service.name`, user-defined fields.  
-**[Audio]** "Each event carries trace context, so when the user's button click triggers backend processing, they are stitched together into a single trace. That's end-to-end tracing."
+**[Audio]** "Each trace carries trace context, so when the user interacts and triggers backend processing, all spans stitched together into a single trace. That's end-to-end tracing."
 
 **[Visual]** Bullet points appearing on screen with checkmarks:
-• Traces give you one user's complete journey for each request 
+• Traces show a user's complete end-to-end journey through a web frontend from a single request
 • Spans capture each step with full context  
 • Structured telemetry lets you ask specific questions  
 • Frontend and backend are part of the same story, represented by a trace  
-**[Audio]** "Let's recap: Traces give you one user's complete journey for each click event. Spans capture each step with full context. Structured telemetry lets you ask specific questions instead of guessing. And your frontend spans connect to backend spans — giving you the full story from click to response."
+**[Audio]** "Let's recap: a trace span captures each step along the way with its duration and full context. Structured telemetry lets you ask specific questions instead of guessing. And your frontend spans connect to backend spans — giving you the full story from user interaction to response."
