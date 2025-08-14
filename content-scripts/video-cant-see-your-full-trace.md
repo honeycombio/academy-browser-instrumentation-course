@@ -30,32 +30,58 @@ The likely cause? The headers didn’t make it from the browser to the backend.
 
 
 ### [Visual] List of common causes in a Honeycomb query result:
-- `useTraceHeaders` not enabled
+- Not using the standard opentelemetry instrumentation for fetch/xmlhttprequest. This is on by default in our SDK but if you turned it off manually, you are creating problems for yourself.
+
+This is what the bad config looks like:
+```js
+const sdk = new HoneycombWebSDK({
+  instrumentations: [
+    getWebAutoInstrumentations({
+      // this is what it looks like when they disable the instrumentation:
+      "@opentelemetry/instrumentation-xml-http-request": {
+        enabled: false,
+      },
+      "@opentelemetry/instrumentation-fetch": {
+        enabled: false,
+      },
+      // ^^^^
+    }),
+    new UserInteractionInstrumentation(),
+  ],
+  serviceName,
+});
+```
+
+correct config:
+```js
+const sdk = new HoneycombWebSDK({
+  instrumentations: [
+    getWebAutoInstrumentations(),
+    new UserInteractionInstrumentation(),
+  ],
+  serviceName,
+});
+```
+
+- async/await requests
 - CORS blocking headers
 - Backend doesn’t extract context from incoming requests
 **[Audio]**
 There are a few common reasons this might happen:
-First, the Honeycomb Web SDK needs to have `useTraceHeaders: true` in its config. Without that, no headers are added.
+First, the honeycomb sdk may not be configured to send those headers to your backend, via the `propagateTraceHeaderCorsUrls` option.
 Second, the backend server must allow those headers using CORS rules, or the browser will strip them.
 Third, the backend must be configured to extract context from those headers and continue the trace.
 
-### [Visual] Jess opens SDK config
-**[Audio]** 
-Jess opens her SDK config and sees the problem: `useTraceHeaders` was missing.
-
-### [Visual] Updated config:
-
+Looking at config:
 ```js
-new WebSDK({
-  serviceName: 'insert-service-name',
-  apiKey: '<your-api-key>',
-  dataset: 'insert-dataset-name',
-  debug: true
-  useTraceHeaders: true
-}).start()
+const sdk = new HoneycombWebSDK({
+  serviceName,
+  propagateTraceHeaderCorsUrls: [/* insert regex to match your backend */]
+});
 ```
 
-_Note: The values need to be updated here._
+If this regex does not match the backend, then the `traceparent` header will not be included.
+
 
 **[Audio]**
 She updates her config to include it.
@@ -82,6 +108,7 @@ It’s time to check the backend instrumentation. The service must extract trace
 ### [Visual] Honeycomb UI: example of working trace with frontend → backend connection
 **[Audio]**
 In OpenTelemetry, this means the backend must read the incoming `traceparent` header and create new spans that share the same trace ID.
+If you are using a standard opentelemetry integration for Go, Java, Python, etc. whatever backend service you are using, then this will happen automatically. [highlight correct backend service configuration here]
 Once that’s in place, the trace flows cleanly from browser to backend.
 
 ### [Visual] Side-by-side: Broken trace vs. connected trace in Honeycomb UI
@@ -109,3 +136,24 @@ With those pieces in place, Jess unlocked full end-to-end trace visibility.
 When your trace looks incomplete, start with the headers.
 `traceparent` connects your spans. `baggage` adds context.
 They’re the glue that holds your trace together."
+
+
+## frontend to frontend propagation, figure out where this lives
+in some instances, you may see a break of traces within the frontend. ie. user clicks a button, the button triggers an http request, but in honeycomb you do not see the spans for the button click and the http request being connected.
+
+this usually is because opentelemetry is not able to automatically propagate the trace context when you make fetch or xmlhttprequests in an async function. When moving across async requests, you must either propagate the context manually, or use the opentelemetry context manager:
+
+```js
+const sdk = new HoneycombWebSDK({
+  // other config options omitted...
+  contextManager: new ZoneContextManager()
+});
+sdk.start();
+```
+
+
+span for button click 
+  ->> span for http request
+    ->> span on the backend
+
+[note: see readme: https://github.com/honeycombio/honeycomb-opentelemetry-web/tree/main/packages/honeycomb-opentelemetry-web#context-management]
