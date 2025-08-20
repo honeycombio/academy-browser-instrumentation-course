@@ -85,10 +85,10 @@ To validate we've wired it up correctly, let's first make sure we're in the corr
 The SDK automatically instruments key parts of her app using OpenTelemetry defaults.
 This includes:
 - Errors
-- Core Web Vitals like Largest Contentful Paint (LCPs) and First Input Delay
-- Page loads and navigation events
 - Click events and user interactions
 - Fetch and XHR requests
+- Page loads and navigation events
+- Core Web Vitals like Largest Contentful Paint (LCPs) and First Input Delay
 - Browser and device metadata
 
 ### [Visual] Go into an end-to-end trace, view of the attribute table with attributes. Use the search function to show these attributes.
