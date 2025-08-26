@@ -30,7 +30,7 @@ npm install @honeycombio/opentelemetry-web @opentelemetry/auto-instrumentations-
 ```
 **[Audio]**
 First, Jess uses `npm install` to add the Honeycomb and OpenTelemetry packages in the `package.json` file in the `services/react` folder using the terminal. 
-These packages include everything needed to automatically capture frontend telemetry and forward it to Honeycomb. The Honeycomb SDK wraps the OpenTelemetry JavaScript SDK and will set up common instrumentation out of the box, saving time and reducing the chance of manual error.
+These packages include everything needed to automatically capture frontend telemetry and forward it to Honeycomb. The `HoneycombWebSDK` wraps the OpenTelemetry JavaScript SDK and will set up common instrumentation out of the box, saving time and reducing the chance of manual error.
 
 ---
 
@@ -57,16 +57,11 @@ sdk.start();
 // React createRoot goes here
 ```
 **[Audio]**
-Next, Jess wires up automatic instrumentation by configuring the Honeycomb Web SDK.
-
+Next, Jess wires up automatic instrumentation by configuring the `HoneycombWebSDK`.
 She creates a new SDK instance and passes in three things:
-
-First, her Honeycomb API key: this is what authenticates her telemetry with Honeycomb’s ingest API.
-
-Second, a service name: she labels this frontend app as "react". That name will appear in Honeycomb when she views her spans or traces, and helps her tell different services apart.
-
-Third, she provides a list of instrumentations using `getWebAutoInstrumentations()`.
-This is a helper function from OpenTelemetry that enables automatic span creation for things like page loads, fetch requests, user interactions, Core Web Vitals, and more, all without having to write manual code.
+- First, her Honeycomb API key: this is what authenticates her telemetry with Honeycomb’s ingest API.
+- Second, a service name: she labels this frontend app as `react`. That name will appear in Honeycomb when she views her spans or traces, and helps her tell different services apart.
+- Third, she provides a list of instrumentations using `getWebAutoInstrumentations()`. This is a helper function from OpenTelemetry that enables automatic span creation for things like page loads, fetch requests, user interactions, Core Web Vitals, and more, all without having to write manual code.
 
 Finally, she calls `sdk.start()` to activate the SDK. That’s what kicks off telemetry collection and sends her spans to Honeycomb.
 
@@ -76,7 +71,7 @@ This step is where the instrumentation actually begins, and it's what unlocks vi
 
 ### [Visual] Start Meminator back up, run `./run` in terminal.
 **[Audio]**
-Let's run Meminator again, then validate the results in Honeycomb.
+Let's run Meminator again, generate some fresh traces, then validate the results in Honeycomb.
 
 ### [Visual] Highlighting traces and spans in Honeycomb UI Web Launchpad
 **[Audio]**
@@ -106,11 +101,11 @@ All of these uses OpenTelemetry semantic conventions, which makes it easier to q
 Within those spans, she inspects key attributes that confirm proper setup:
 - She looks for trace IDs and parent IDs to ensure the trace context is properly connected.
 - She checks that HTTP attributes like method, URL, and user agent are all captured according to OpenTelemetry standards, along with performance metrics like `lcp` attributes.
-- She confirms that session IDs are being tracked.
+- She confirms that `session.id`s are being tracked.
 - She also verifies that Honeycomb's derived fields, like `is_root`, are present.
 
 Now, the best part: we can see that frontend spans are connected to backend traces.
-The SDK uses the W3C `Traceparentcontext` header to pass trace headers with fetch requests.
+The SDK uses the W3C `traceparent` context header to pass trace headers with fetch requests.
 If the backend is also instrumented with OpenTelemetry, the trace continues seamlessly across services.
 
 ### [Visual] Show a trace with only a click, route them to [Documentation](https://docs.honeycomb.io/send-data/javascript-browser/honeycomb-distribution/?utm_source=chatgpt.com) on evaluating what interactions they should see.
@@ -121,20 +116,21 @@ Both behaviors are “normal,” and the difference comes down to how JavaScript
 
 ### [Visual] Show session IDs in Honeycomb UI
 **[Audio]**
-By default, the Honeycomb SDK automatically generates session IDs and attaches them to every span - as an attribute - during a browser session. This is crucial for frontend observability. Since user interactions only live for the duration of the interaction itself, trace context is lost before the user initiates subsequent requests in the browser. Session IDs are the key linking mechanism, since these frontend interactions are oftentimes spread across many traces.
-Session IDs also allow Jess to filter traces by user session in Honeycomb.
+By default, the `HoneycombWebSDK` automatically generates `session.id`s and attaches them to every span - as an attribute - during a browser session. This is crucial for frontend observability. Since user interactions only live for the duration of the interaction itself, trace context is lost before the user initiates subsequent requests in the browser. `session.id`s are the key linking mechanism, since these frontend interactions are oftentimes spread across many traces.
 
-If needed, it's possibe to override the session logic using a custom session ID; for example, if you can log in as different users in your web application, you may want to generate a new session ID every time you switch users.
+`session.id`s also allow Jess to filter traces by user session in Honeycomb.
+
+If needed, it's possibe to override the session logic using a custom `session.id`; for example, if you can log in as different users in your web application, you may want to generate a `session.id` every time you switch users.
 
 ### [Visual] Honeycomb UI showing complete trace
 **[Audio]**
-With session IDs in place, Jess can now follow a user’s journey across multiple browser interactions and traces, rich browser-specific attributes, and session attributes - all in one place! 
+With `session.id`s in place, Jess can now follow a user’s journey across multiple browser interactions and traces, rich browser-specific attributes, and session attributes - all in one place! 
 
 Automatic instrumentation helped her get started fast, with minimal custom coding and lots of great insight.
 
 ### [Visual] Final screen: “Key Takeaways”
 Let’s recap what Jess got from automatic instrumentation:
-- Automatic instrumentation with OpenTelemetry and the Honeycomb WebSDK captures important frontend spans with no manual coding.
-- Honeycomb’s Web SDK wraps OpenTelemetry to collect page loads, clicks, fetches, Core Web Vitals, and more - right out of the box.
-- Make sure to verify proper header propagtion. Use the W3C `Traceparentcontext` header so frontend spans connect seamlessly to backend traces. _Note: Include a link to [CORS errors documentation](https://docs.honeycomb.io/troubleshoot/common-issues/sending-data/#cors-errors).
-- Session IDs link multiple frontend traces for the same user, even when traces are split.
+- Automatic instrumentation with OpenTelemetry and the `Honeycomb WebSDK` captures important frontend spans with no manual coding.
+- The `HoneycombWebSDK` wraps OpenTelemetry to collect page loads, clicks, fetches, Core Web Vitals, and more - right out of the box.
+- Make sure to verify proper header propagtion. Use the W3C `traceparent` context header so frontend spans connect seamlessly to backend traces. _Note: Include a link to [CORS errors documentation](https://docs.honeycomb.io/troubleshoot/common-issues/sending-data/#cors-errors).
+- `session.id`s link multiple frontend traces for the same user, even when traces are split.
