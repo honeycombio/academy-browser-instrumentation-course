@@ -1,124 +1,130 @@
-# Video: Defining a Session for Your App
+# Video: Define a Session for Your App
 
 ## Learning Objectives
 By the end of this video, you’ll be able to:
-- Override Honeycomb’s default session ID generator  
-- Persist session IDs using browser storage  
-- Align session attribution with your app’s user session model  
+- Override Honeycomb’s default `session.id` generator  
+- Persist `session.id`s using browser storage  
+- Align session attribution with your app’s user session definition  
 - Confirm shared session context across user interactions in Honeycomb  
 
 ---
 
-### [Visual] Jess looking consfused + trace list with fragmented session IDs for the same user  
+### [Visual] Jess looking consfused, trace list with fragmented `session.id` for the same user within what she wants as a defined session, and Meminator being reloaded in browser. Note on screen: This application has been instrumented with backend and frontend automatic instrumentation!
 **[Audio]**  
-Jess, a frontend engineer who is working on a web application called Meminator, has been using Honeycomb to trace user interactions, but something looks off. When she searches for `session.id`, she notices that every time a user refreshes the page or comes back later, Honeycomb shows a brand-new session. That makes it hard for her to follow a user’s journey through her app.
+Jess, a frontend engineer working on a web application called Meminator, has been using Honeycomb to trace user interactions. But when she searches for `session.id` in her traces, she notices something problematic: every time a user reloads the page, Honeycomb shows a completely new session, making it challenging to track a user's complete interaction with her app. 
 
-### [Visual] Show Meminator with GO being pressed w/ diagram/abstract visual showing how session IDs are assigned by default with each page load, followed by "override" cue to indicate customization option
+To fix this, Jess first needs to implement a proper session definition. For Meminator, she defines a session as follows: when a user first visits the app, they get a unique `session.id` that persists until either they close the browser tab or they go idle for more than 5 minutes without generating a meme. Once the session ends, the `session.id` is cleared, and the next time they visit, they'll get a fresh `session.id`.
+
+### [Visual] Show Meminator on browser being refreshed w/ diagram/visual showing how session IDs are assigned by default with each page load, followed by "override" visual cue to indicate defining option
 **[Audio]**  
-Since Honeycomb assigns a new session ID every time the page loads, a user can click “GO” five times, refresh, and click again, and each trace could look unrelated, even though it’s the same user.  
+By default, the `HoneycombWebSDK` generates a new `session.id` every time the page loads. This means if a user clicks "GO" five times, reloads the page, and clicks "GO" again, the sixth interaction will appear as completely separate, unrelated trace in Honeycomb—even though they're all part of the same user's session.
 
-To fix that, we can override the session logic so the traces match how people actually use the app.  
+To get meaningful insights into user behavior, Jess needs to override this default session logic so her traces actually reflect how people use Meminator.
 
-In this video, you’ll learn how to define custom session IDs for your frontend app using the `HoneycombWebSDK` so you can see your user journeys the way you want to in your traces. 
+In this video, you'll learn how to define `session.id` with the `HoneycombWebSDK` to track user journeys the way that makes sense for your application. 
 
 **Source:** [Honeycomb blog: Manage Your Session ID](https://www.honeycomb.io/blog/manage-your-session-id-honeycombs-web-sdk)
 
-### [Visual] Split screen: default (new ID each load) vs. custom (one ID)  
+### [Visual] Split screen: default (new ID each load) vs. custom (one ID for defined user session)  
 **[Audio]**  
-By default, the `HoneycombWebSDK` generates a new ID for every page load.  
-This is simple, but it doesn’t reflect how most frontend sessions actually work in Meminator.
-Instead, we can define our own logic using the `sessionProvider` property in the `HoneycombWebSDK`.  
+By default, the `HoneycombWebSDK` generates a new `session.id` for every page load. This doesn't fit how user sessions actually work in Meminator. 
+
+Instead, we can define our own logic using the `sessionProvider` property. 
+
 **Source:** [Honeycomb blog: Manage Your Session ID](https://www.honeycomb.io/blog/manage-your-session-id-honeycombs-web-sdk)
 
 ### [Visual] Code snippet implementing a custom session ID using `sessionProvider` 
 **[Audio]**  
-Here’s how you do it for Meminator. 
-First, let's configure the `sessionProvider` `HoneycombWebSDK` property, which allows us to set the `session.id` by implementing a `getSessionId` method. 
-Then, the SDK will store the session ID in the brower's `sessionStorage`, reuse it if it exists, or generate a new one if not.
+First, at the entry point of the app, in the `main.tsx` file, import the `getSession` function from the `session-management.ts` script. This script generates and keeps the `session.id` active for up to 5 minutes by default. After 5 minutes, it generates a new one.
+
+```js
+import {getSession} from './session-management';
+```
+
+Next, in the same file, configure the `sessionProvider` property by implementing the `getSessionId` method, which calls our `getSession` function to return a valid `session.id`. This method will store this `session.id` in the browser's `sessionStorage` and reuse it across multiple "GO" clicks, page loads, and route changes, or generate a new one when needed.
 
 ```js
 ...
 const sdk = new HoneycombWebSDK({
   apiKey: '[YOUR API KEY HERE]', 
-  serviceName: '[YOUR APPLICATION NAME HERE]', 
+  serviceName: 'react', 
   ... // other config
   sessionProvider: {
-      getSessionId: () => {
-      return SessionGateway.getSession();
-      }
+      getSessionId: () => { return getSession(); }
   }
 // other config...
 });
 
 sdk.start();
 ```
-This ensures a consistent session ID across multiple 'GO' clicks or route changes.
 
 **Source:** [Honeycomb blog: Manage Your Session ID](https://www.honeycomb.io/blog/manage-your-session-id-honeycombs-web-sdk)
 
-### [Visual] Diagram showing two paths: anonymous vs. logged-in  
+### [Visual] Diagram showing custom session manager, `session.id` persists through various user actions inc. many meme generations, reloading, and closing browser
 **[Audio]**  
-Now, what if your app needs to handle changes in user state?  
-For example, a user may start out anonymous, then log in, or log out later.  
-In those cases, you’ll want the old session to end so the trace data doesn’t get mixed together.  
+What if our app needs to start new sessions based on specific user actions? To manage sessions effectively, we need to control when new `session.id`s are generated. In Meminator, a session ends when a user closes a browser tab or remains idle for more than 5 minutes without creating a meme. By default, a new `session.id` is created every 5 minutes. 
 
-With our `sessionStorage` example, ending a session is as simple as removing the stored ID: `sessionStorage.removeItem('session.id');`
+However, we want to extend an active session whenever a user generates a meme, so the session stays alive while the app is being used. For example, if a user makes a meme and then waits 7 minutes, the next meme should start a new session. But if they make a meme and wait only 3 minutes, the session should be extended by another 5 minutes.
+
+Because sessions are stored in the browser’s memory-based session storage, they are automatically scoped to individual tabs. This means each tab or browser instance already gets its own isolated session. To prevent conflicts, we need to ensure that multiple open tabs or instances always receive distinct `session.id`s.
+
+Here's how we implement this session logic. 
+
+First, we have to import the `updateExpireTime` function from the `session-management.ts` script at the top of the `Meminator.tsx` file. We're importing it here because this is where the "GO" button is.
+
+`import {updateExpireTime} from './session-management';`
+
+Then, we have to call the function:
 
 ```js
-...
-const sdk = new HoneycombWebSDK({
-  apiKey: '[YOUR API KEY HERE]', 
-  serviceName: '[YOUR APPLICATION NAME HERE]', 
-  ... // other config
-  sessionProvider: {
-      getSessionId: () => {
-      return SessionGateway.getSession();
-      },
-      sessionStorage.removeItem('session.id');
-  }
-// other config...
-});
-
-sdk.start();
+    event.preventDefault();
+    updateExpireTime();
+    fetchMeme();
 ```
-This clears the current session. The next time another span is created, your logic will generate a new `session.id`.
 
-Here are some common cases where expiring a session makes sense:
-- A user goes from anonymous to logged in
-- A user logs out
-- A browser times out the session and logs them out automatically
-- A user switches or assumes a new role
+Here is what the final code should look like:
 
-By explicitly clearing the stored ID, you make sure Honeycomb data reflects accurate session boundaries.
+```js
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    updateExpireTime();
+    fetchMeme();
+  };
+  ````
+
+By explicitly extending `session.id`, you make sure Honeycomb data reflects accurate session boundaries.
 
 **Source:** [Honeycomb blog: Manage Your Session ID](https://www.honeycomb.io/blog/manage-your-session-id-honeycombs-web-sdk)
 
-### [Visual] Honeycomb Query Builder with `WHERE session.id = "[some value that makes sense for Meminator]"` and `GROUP BY trace.span_id`  
+### [Visual] Honeycomb Query Builder with `WHERE session.id = "specific session.id"` and `is_root` GROUP BY `trace.trace_id` and `session.id`
 **[Audio]**  
-Now that you’ve set up your custom session ID, let’s make sure it works.  
-In Honeycomb, open the Query Builder and add `session.id = "[some value that makes sense for Meminator]` to the WHERE clause, then GROUP BY `trace.span_id`.  This query filters your data to a single session, then groups events by span.
+Now that we’ve defined our `session.id`, let’s make sure it works.  
 
-### [Visual] Query results showing five spans linked by the same session.id
-**[Audio]**
-If a user hit “Go” five times in Meminator, you should see five spans—each from the same session—linked together by the `session.id` you defined.
+First, let's rerun Meminator, hit "GO" five times, reload the page, then hit "GO" again. Do this in under 5 minutes.
+
+In Honeycomb, open the Query Builder and change the time range to the last 10 minutes. Then, filter by `is_root` to view only root spans. GROUP BY `trace.trace_id` and `session.id`. Run this query.
+
+You should see 6 traces—each from the same session—linked together by the `session.id` you defined.
+
+Add the specific `session.id` to the WHERE clause. This will show you the specific user session. 
 
 ### [Visual] Trace view with `session.id` highlighted in the span details
 **[Audio]**
-This confirms the override is working: Honeycomb is grouping user interactions into a single, continuous session.
+This confirms the override is working: Honeycomb is grouping user interactions into a single, continuous session based on our session definition.
 
 From here, you can follow a user’s journey end-to-end instead of chasing fragments across multiple sessions.
 
-### [Visual] Recap slide: override, persist, group spans
+### [Visual] Recap slides
 **[Audio]**
+There are a handful of common cases where managing a session id makes sense:
+- A user goes from anonymous to logged in
+- A user logs out
+- A browser times out the session
+- A user switches or assumes a new role
+
 Let’s recap:
-- Session IDs help group spans into user journeys that are accurate to they _actually_ use your software
-- You can override Honeycomb’s default behavior using   
-```js
-    sessionProvider: {
-      getSessionId: () => {
-        return SessionGateway.getSession();
-      }
-    }
-```
-- Store the `session.id` where it persists across interactions
-- Meaningful session attribution leads to better observability
+- Define clear rules for when sessions start, expire, or extend.
+- The `HoneycombWebSDK` default behavior creates a new `session.id` on every page load.
+- Override this behavior with the `sessionProvider` property to align session tracking with your app’s definition of a session.
+- Use browser storage (like `sessionStorage`) to persist session.ids across reloads, clicks, and route changes.
+- Proper session management helps you follow full user journeys instead of fragmented traces.
