@@ -9,7 +9,7 @@ By the end of this video, you’ll be able to:
 
 ---
 
-### [Visual] Jess looking consfused, trace list with fragmented `session.id` for the same user within what she wants as a defined session, and Meminator being reloadedd in browser. Note on screen: This application has been instrumented with backend and frontend automatic instrumentation!
+### [Visual] Jess looking consfused, trace list with fragmented `session.id` for the same user within what she wants as a defined session, and Meminator being reloaded in browser. Note on screen: This application has been instrumented with backend and frontend automatic instrumentation!
 **[Audio]**  
 Jess, a frontend engineer working on a web application called Meminator, has been using Honeycomb to trace user interactions. But when she searches for `session.id` in her traces, she notices something problematic: every time a user reloads the page, Honeycomb shows a completely new session, making it challenging to track a user's complete interaction with her app. 
 
