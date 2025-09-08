@@ -1,111 +1,144 @@
-# Video: Can't See Your Full Trace? How Context Propagation Works
+# Video: Can't See Your Full Trace?
 
 ## Learning Objectives:
- - Diagnose missing trace segments or disconnected spans
-- Explain what `traceparent` and `baggage` headers do and why they matter
+- Diagnose missing trace segments or disconnected spans
+- Explain what `traceparent` headers do and why they matter
 - Verify and troubleshoot context propagation from browser to backend
 
-### [Visual] Title screen: "Can't See Your Full Trace? How Context Propagation Works"
+### [Visual] Title screen: "Can't See Your Full Trace? How Context Propagation Works" and Jess, our FE engineer, looking at some connected traces and some disconnected traces.
 **[Audio]**
-Jess is feeling great: her browser app, Meminator, is instrumented with the Honeycomb Web SDK and OpenTelemetry.
-She’s seeing frontend spans in Honeycomb and getting visibility into user interactions, fetches, and document loads.
-But now she’s hitting a wall.
-Some traces look disconnected. Some spans start in the backend with no link to the frontend. She's wondering why the all the pieces aren't stitching together, as expected.
+Jess is feeling great: her browser app, Meminator, is instrumented with the `HoneycombWebSDK` and OpenTelemetry. She’s seeing frontend spans in Honeycomb and getting visibility into user interactions, fetches, and document loads.
 
-### [Visual] Honeycomb UI showing traces missing frontend segments
+But now she’s hitting a wall. Some traces look disconnected. Some spans start in the backend with no link to the frontend. She's wondering why the all the pieces aren't stitching together, as she expected.
+
+If you're seeing disconnected traces, the problem is usually one of these: your trace propagation isn't set up correctly, CORS is blocking the necessary headers, your backend isn't extracting the trace context from incoming requests, or async requests are losing context.
+
+Let's start with investigating context propagation.
+
+### [Visual] Jess clicks into 2 disconnected traces in Honeycomb, then highlight `traceparent` headers in SDK
 **[Audio]**
-This could be a context propagation problem.
-Even though spans are being collected, they won’t be stitched into a single trace unless they share a common trace ID, and that depends on the right headers being passed.
+In order for traces to propagate correctly, here's how it should work: when your frontend makes a request using fetch, the `HoneycombWebSDK` automatically adds a `traceparent` header following OpenTelemetry's W3C Trace Context standard. This header carries the trace and span IDs that allow your backend to continue the same trace.
 
-### [Visual] Highlight `traceparent` and `baggage` headers in Honeycomb span attributes table
+But this only works if those headers actually make it to your backend.
+
+### [Visual] Code snippet with `enabled: false` highlighted on both fetch and xml packages
 **[Audio]**
-When the frontend sends a request — like a fetch — the Honeycomb Web SDK uses OpenTelemetry's W3C Trace Context format.
-That means each request includes a `traceparent` header with the trace and span ID, and a `baggage` header with metadata like the session ID.
-These headers make it possible for the backend to continue the trace, but only if they’re actually received.
+This might happen if you're not using OpenTelemetry's standard instrumentation for `fetch` or `XMLHttpRequest`. The `HoneycombWebSDK` enables the instrumentation by default, but if you've manually disabled it, you won't see the spans for your web dataset.
 
-### [Visual] Jess clicks into a disconnected trace in Honeycomb and sees missing `trace.parent_id`
-**[Audio]** 
-In Honeycomb, Jess spots the issue: some backend spans don’t show a parent span ID. They aren’t part of the same trace.
-The likely cause? The headers didn’t make it from the browser to the backend.
-
-
-### [Visual] List of common causes in a Honeycomb query result:
-- `useTraceHeaders` not enabled
-- CORS blocking headers
-- Backend doesn’t extract context from incoming requests
-**[Audio]**
-There are a few common reasons this might happen:
-First, the Honeycomb Web SDK needs to have `useTraceHeaders: true` in its config. Without that, no headers are added.
-Second, the backend server must allow those headers using CORS rules, or the browser will strip them.
-Third, the backend must be configured to extract context from those headers and continue the trace.
-
-### [Visual] Jess opens SDK config
-**[Audio]** 
-Jess opens her SDK config and sees the problem: `useTraceHeaders` was missing.
-
-### [Visual] Updated config:
+Here's what a problematic config looks like. Notice that the instrumentation is disabled here.
 
 ```js
-new WebSDK({
-  serviceName: 'insert-service-name',
-  apiKey: '<your-api-key>',
-  dataset: 'insert-dataset-name',
-  debug: true
-  useTraceHeaders: true
-}).start()
+const sdk = new HoneycombWebSDK({
+  apiKey: '[YOUR API KEY HERE]', 
+  serviceName: '[YOUR APPLICATION NAME HERE]', 
+  instrumentations: [
+    getWebAutoInstrumentations({
+      // this is what it looks like when they disable the instrumentation:
+      "@opentelemetry/instrumentation-xml-http-request": {
+        enabled: false,
+      },
+      "@opentelemetry/instrumentation-fetch": {
+        enabled: false,
+      },
+      // ^^^^
+    }),
+  ],
+});
+```
+### [Visual] Show SDK with code snippet for `propagateTraceHeaderCorsUrls`
+**[Audio]** 
+Next, we need to configure the endpoint patterns that will recieve the `traceparent` header. 
+You may run into issues if the `HoneycombWebSDK` is blocking the `traceparent` header from reaching your backend.
+
+### [Visual]: Highlight config defaults block and getWebAutoInstrumentations block
+**[Audio]** 
+In this case, there are usually three things to check. 
+- First, make sure the `HoneycombWebSDK` is actually configured to send headers to your backend using the `propagateTraceHeaderCorsUrls` option for the fetch, XMLHttpRequest, and documentLoad instrumentation. 
+- Second, your backend needs to explicitly allow these headers through its CORS policy, or it will strip them out or possibly fail because it refuses them.
+- And third, your backend instrumentation needs to be set up to extract and use that trace context.
+
+Let's start with the frontend config. If the regex patterns don't match your backend URL, the SDK won't include the `traceparent` header at all.
+
+```js
+const configDefaults = {
+  propagateTraceHeaderCorsUrls: [
+        // this regexp means add to all outgoing fetch/XMLHttpRequest calls
+        /.*/g,
+        // this regexp allows APIs to a specific host - note the escape characters before the forward slashes
+        /http:\/\/api.meminator.org:8080/
+    ]
+};
+
+const sdk = new HoneycombWebSDK({
+  apiKey: '[YOUR API KEY HERE]', 
+  serviceName: '[YOUR APPLICATION NAME HERE]', 
+  instrumentations: [
+    getWebAutoInstrumentations({
+      '@opentelemetry/instrumentation-xml-http-request': configDefaults,
+      '@opentelemetry/instrumentation-fetch': configDefaults,
+      '@opentelemetry/instrumentation-document-load': configDefaults,
+      ...
+    }),
+  ],
+  serviceName,
+});
 ```
 
-_Note: The values need to be updated here._
-
+### [Visual] Jess checks backend CORS policy, show the code snippet
 **[Audio]**
-She updates her config to include it.
-Now, outgoing requests will automatically include `traceparent` and `baggage` headers.
+Next, Jess needs to check her backend's CORS configuration. The server needs to explicitly allow the `traceparent` and `tracestate` headers:
 
-
-### [Visual] Jess checks backend CORS policy
-**[Audio]**
-Next, Jess checks her backend CORS settings. She adds support for the trace headers:
-
-### [Visual] CORS headers appear in backend code:
 ```http
-Access-Control-Allow-Headers: traceparent, baggage
+Access-Control-Allow-Headers: traceparent, tracestate
 Access-Control-Allow-Origin: https://meminator.app
 ```
+
+This example allows only CORS headers if the app was running on the website https://meminator.app.
+
 **[Audio]**
-This ensures the browser can send trace context headers across origins without them being blocked.
+These CORS rules tell the browser it's safe to send trace context headers across origins, preventing them from being blocked.
 
-### [Visual] Jess checks Honeycomb and still sees disconnected spans
-**[Audio]** 
-Still not seeing connected traces?
-It’s time to check the backend instrumentation. The service must extract trace context from incoming requests and continue the trace.
+If you're still seeing disconnected traces after checking frontend instrumentation and CORS, it's time to look at your backend. 
 
-### [Visual] Honeycomb UI: example of working trace with frontend → backend connection
+### [Visual] Honeycomb UI: example of working trace with frontend → backend connection and `backend-for-frontend` instrumentation code with correct config
 **[Audio]**
-In OpenTelemetry, this means the backend must read the incoming `traceparent` header and create new spans that share the same trace ID.
-Once that’s in place, the trace flows cleanly from browser to backend.
+Here's what should happen: your backend reads the `traceparent` header from the incoming request and creates new spans using the same trace ID. If you're using standard OpenTelemetry instrumentation for your backend this context extraction should happen automatically with the right configuration.
 
-### [Visual] Side-by-side: Broken trace vs. connected trace in Honeycomb UI
+Once everything is wired up correctly, you'll see traces that flow seamlessly from your browser all the way through your backend services.
+
+### [Visual] Honeycomb UI: show disconnected trace with just the click 
+**[Audio]** Now that we've covered frontend-to-backend trace propagation, let's look at a different issue: traces that are disconnected within the frontend itself.
+
+Sometimes you'll see disconnected traces that happen entirely on the frontend. For example, a user clicks a button that triggers an HTTP request, but in Honeycomb these appear as separate, disconnected traces instead of a single flow.
+
+This typically happens because OpenTelemetry can't always maintain trace context across async operations. When you make fetch or XMLHttpRequest calls inside async functions, the trace context can get lost.
+
+### [Visual] Code snippet
 **[Audio]**
-You can think of context propagation like a Swiss Army knife. If you want all your tools in one place: page load, API call, DB query, you need to pass the trace context along at every hop.
-If something drops it, Honeycomb can’t stitch the picture back together.
+One method you could try is to use OpenTelemetry's Zone Context Manager, which tracks context across async boundaries:
 
+```js
+const sdk = new HoneycombWebSDK({
+  // other config options omitted...
+  contextManager: new ZoneContextManager()
+});
+sdk.start();
+```
 
-### [Visual] Jess refreshes the app, generates a trace, and opens it in Honeycomb
+You may see the complete story in one trace here, but it's not guaranteed. Also, this library adds a significant amount of JavaScript to your browser's payload. As another option, you could query in Honeycomb by `session.id` and view the events in ascending date order.
+
+### [Visual] Honeycomb showing connected trace: button click → HTTP request → backend
 **[Audio]**
-Now Jess sees a full trace: click to fetch to database, all connected.
 
-### [Visual] Final screen: "Recap"
+In some cases, you'll see the complete story: the button click span connects to the HTTP request span, which then flows into your backend spans, giving you end-to-end visibility of the user's action.
+
+[note: see README: https://github.com/honeycombio/honeycomb-opentelemetry-web/tree/main/packages/honeycomb-opentelemetry-web#context-management]
+
+### [Visual] Slide w/ key takeaways
 **[Audio]**
-Let’s recap what Jess did to fix her broken traces:
-- She verified whether `traceparent` and `baggage` headers were present in requests
-- She confirmed her Honeycomb SDK config included `useTraceHeaders: true`
-- She updated backend CORS settings to allow those headers
-- She checked that her backend was instrumented to extract and continue the trace context
-With those pieces in place, Jess unlocked full end-to-end trace visibility.
-
-
-### [Visual] Final screen: "When in doubt, check your headers"
-**[Audio]** "
-When your trace looks incomplete, start with the headers.
-`traceparent` connects your spans. `baggage` adds context.
-They’re the glue that holds your trace together."
+Let's recap the ways you can fix disconnected traces:
+- Work through each possibility methodically: frontend instrumentation, CORS, backend extraction, async context.
+- Don't disable fetch or XMLHttpRequest instrumentation. Keep `@opentelemetry/instrumentation-fetch` and `@opentelemetry/instrumentation-xml-http-request` enabled in your SDK config.
+- Configure CORS properly. Set `propagateTraceHeaderCorsUrls` on the frontend and allow `traceparent` headers on your backend.
+- Verify backend extraction. Ensure your backend OpenTelemetry instrumentation reads incoming trace headers automatically.
+- Try using `ZoneContextManager` for async. Add it to your SDK config to maintain trace context across async operations. Or, you can try querying by `session.id` in Honeycomb and viewing your events.
