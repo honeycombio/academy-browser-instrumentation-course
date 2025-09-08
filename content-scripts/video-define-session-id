@@ -35,13 +35,13 @@ Instead, we can define our own logic using the `sessionProvider` property.
 
 ### [Visual] Code snippet implementing a custom session ID using `sessionProvider` 
 **[Audio]**  
-First, import the `getSession` function from the session management script. 
+First, at the entry point of the app, in the `main.tsx` file, import the `getSession` function from the `session-management.ts` script. This script generates and keeps the `session.id` active for up to 5 minutes by default. After 5 minutes, it generates a new one.
 
 ```js
 import {getSession} from './session-management';
 ```
 
-Next, configure the `sessionProvider` property by implementing the `getSessionId` method, which calls our `getSession` function to return a valid `session.id`. This method will store this `session.id` in the browser's `sessionStorage` and reuse it across multiple "GO" clicks, page loads, and route changes, or generate a new one when needed.
+Next, in the same file, configure the `sessionProvider` property by implementing the `getSessionId` method, which calls our `getSession` function to return a valid `session.id`. This method will store this `session.id` in the browser's `sessionStorage` and reuse it across multiple "GO" clicks, page loads, and route changes, or generate a new one when needed.
 
 ```js
 ...
@@ -70,17 +70,28 @@ Because sessions are stored in the browser’s memory-based session storage, the
 
 Here's how we implement this session logic. 
 
-First, we have to import the `updateSessionExpiryDate` function from the session management script at the top of the `Meminator.tsx` file.
+First, we have to import the `updateExpireTime` function from the `session-management.ts` script at the top of the `Meminator.tsx` file. We're importing it here because this is where the "GO" button is.
 
-`import {updateSessionExpiryDate} from './session-management';`
+`import {updateExpireTime} from './session-management';`
 
 Then, we have to call the function:
 
 ```js
     event.preventDefault();
-    updateSessionExpiryDate();
+    updateExpireTime();
     fetchMeme();
-    ```
+```
+
+Here is what the final code should look like:
+
+```js
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    updateExpireTime();
+    fetchMeme();
+  };
+  ````
+
 By explicitly extending `session.id`, you make sure Honeycomb data reflects accurate session boundaries.
 
 **Source:** [Honeycomb blog: Manage Your Session ID](https://www.honeycomb.io/blog/manage-your-session-id-honeycombs-web-sdk)
