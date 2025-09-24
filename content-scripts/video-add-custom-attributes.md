@@ -25,7 +25,7 @@ Custom resource attributes are key–value pairs you attach to spans. They enric
 
 ## [Section 2: How to Add Attributes in a Browser App]  
 
-**[Visual]** Code w/ `resourceAttributes` config highlighted
+**[Visual]** Code w/ import statement & `resourceAttributes` config highlighted
 
 ```js
 import { HoneycombWebSDK } from '@honeycombio/opentelemetry-web';
@@ -50,7 +50,9 @@ sdk.start();
 *(Source: [Honeycomb — Send Browser Data](https://docs.honeycomb.io/send-data/javascript-browser/honeycomb-distribution/))*  
 
 **[Audio]**
-During initialization of her application with the `HoneycombWebSDK`, Jess can specify extra attributes through the `resourceAttributes` configuration option. This data will be available on every span her instrumentation emits, which makes it easier to correlate feature flag data to important business information. 
+First, Jess will import the features module to access centralized feature flags.
+
+Then, during initialization of her application with the `HoneycombWebSDK`, Jess can specify extra attributes through the `resourceAttributes` configuration option. This data will be available on every span her instrumentation emits, which makes it easier to correlate feature flag data to important business information. 
 
 In our example, we only add one resource attribute; however, in this hash, you can add as many resource attributes as you would like to.
 
