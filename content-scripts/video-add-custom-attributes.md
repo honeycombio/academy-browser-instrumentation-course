@@ -1,130 +1,104 @@
-# Video: Adding Custom Attributes to Spans
+# Video: Adding Custom Resource Attributes to Spans
 
 ## Learning Objectives
-- Add user and app context to spans in a browser app using OpenTelemetry  
-- Choose semantic, consistent attribute names (reuse conventions where possible)  
+- Add app context to spans in a browser app using OpenTelemetry  
+- Choose semantic, consistent attribute names. When possible reuse existing semantic conventions. Definitions can be found [here](https://opentelemetry.io/docs/specs/semconv/registry/attributes/)  
 - Understand how custom attributes make queries and traces more powerful  
 - Apply privacy and best practice considerations when enriching spans  
 
 ---
 
 **[Audio]**  
-Jess, our frontend engineer, has spans flowing from her browser app - Meminator. There's a lot of great context here, but she wants to see the `user.id` and `feature.flag` for each user interaction. 
+Jess, our frontend engineer, has spans flowing from her browser app: Meminator. She's running an A/B test on a new meme generation flow. Jess realizes she needs deeper visibility: she wants to understand how the new feature is performing. She needs to see the feature flag for each user interaction. 
 
-She can do this by adding custom attributes. Custom attributes let you answer your specific questions about your system performance, like which users were affected during an outage or what feature was active during that interaction.
-
-In this video, you’ll learn:  
-- What custom attributes are  
-- How to add them with the `HoneycombWebSDK` and OpenTelemetry  
-- Best practices for naming and privacy  
-- Why they unlock more powerful queries in Honeycomb  
+She can do this by adding custom resource attributes. Resource attributes let you answer your specific questions about your system performance, like which users were affected during an outage or what feature was active during that interaction.
 
 ## [Section 1: What Are Custom Attributes?]  
 
 **[Visual]**  
-Show a trace in Honeycomb. Zoom into attributes panel on a span: highlight `user.id = some-user-id`, `feature.flag = some-feature-flag-name`. 
-
-[Note for SME: I think we may have to go back to the app code to make `feature.flag` relevant and useful. Or, we think of another story that makes some other example of a custom attribute on a FE span useful and awesome to demo].
+Show a full-stack trace in Honeycomb. Zoom into attributes panel on a span: highlight `app.feature.flag.user.questions` field.
 
 **[Audio]**  
-Custom attributes are key–value pairs you attach to spans. They enrich your telemetry with business or user context. Instead of just seeing “this API call was slow,” you’ll can use attributes to see *who* experienced it, *when*, and *under what conditions*.  
+Custom resource attributes are key–value pairs you attach to spans. They enrich your telemetry with business or user context. Instead of just seeing “this API call was slow,” you can use attributes to see *who* experienced it, *when*, and *under what conditions*.  
 
 *(Source: [Honeycomb — Add Custom Instrumentation](https://docs.honeycomb.io/send-data/add-custom-instrumentation/))*  
 
 ## [Section 2: How to Add Attributes in a Browser App]  
 
-**[Visual]**   
+**[Visual]** Code w/ import statement & `resourceAttributes` config highlighted
 
 ```js
 import { HoneycombWebSDK } from '@honeycombio/opentelemetry-web';
 import { getWebAutoInstrumentations } from '@opentelemetry/auto-instrumentations-web';
-
+import { features } from './features';
 ...
 
 const sdk = new HoneycombWebSDK({
-  apiKey: 'your ingest api key',
-  serviceName: 'react',
-  instrumentations: [getWebAutoInstrumentations({
-    '@opentelemetry/instrumentation-xml-http-request': configDefaults,
-    '@opentelemetry/instrumentation-fetch': configDefaults,
-    '@opentelemetry/instrumentation-document-load': configDefaults,
-  })],
-  resourceAttributes: { // Data in this object is applied to every trace emitted.
-    "user.id": user.id, // Specific to your app.
-    "feature.fog": feature.flag, // Specific to your app.
+    apiKey: 'your ingest api key',
+    serviceName: 'react',
+    instrumentations: [
+        getWebAutoInstrumentations()
+    ],
+    resourceAttributes: { // Data in this object is applied to every trace emitted.
+    "feature_flag.key": "ALLOW_USER_QUESTIONS", // Specific to your app.
+    "feature_flag.result.variant": features.ALLOW_USER_QUESTIONS, // Specific to your app.
   },
 });
 sdk.start();
 ```
+
 *(Source: [Honeycomb — Send Browser Data](https://docs.honeycomb.io/send-data/javascript-browser/honeycomb-distribution/))*  
 
 **[Audio]**
-Once Jess has initialized her application with the `HoneycombWebSDK`, she can specify extra attributes through the `resourceAttributes` configuration option. This data will be available on every span her instrumentation emits, which makes it easier to correlate `user.id` and `feature.flag` data to important business information.
+First, Jess will import the features module to access centralized feature flags.
+
+Then, during initialization of her application with the `HoneycombWebSDK`, Jess can specify extra attributes through the `resourceAttributes` configuration option. This data will be available on every span her instrumentation emits, which makes it easier to correlate feature flag data to important business information. 
+
+In our example, we only add one resource attribute; however, in this hash, you can add as many resource attributes as you would like to.
 
 ## [Section 3: Semantic Conventions and Best Practices]
 
 **[Visual]**
 Checklist on screen:
- -Reuse OpenTelemetry semantic conventions
+- Reuse OpenTelemetry semantic conventions
+- Consider using named constants instead of hard-coded strings
 - Use lowercase, dot-separated keys
 - Add business or UX context
 - Avoid PII and unstable values
 
 **[Audio]**
-Follow good practices when when adding custom attributes:
-- Reuse OpenTelemetry’s semantic conventions wherever possible. For example, `browser.language` or `browser.platform` are already standardized.
+When adding custom attributes, there are some good practices you should follow: 
+- Reuse OpenTelemetry’s semantic conventions wherever possible. For example, `browser.language` or `browser.platform` are already standardized. 
+- Consider using named constants instead of hard-coded strings. 
 - Use lowercase keys with dot notation for clarity, like `session.id`.
-- Add attributes that reflect real-world context — feature flags, user roles, steps in a workflow.- Avoid anything personally identifiable, since  raise privacy concerns.
+- Add attributes that reflect real-world context — feature flags, user roles, steps in a workflow.
+- Avoid anything personally identifiable, since these can raise privacy concerns.
 
-*(Source: [Honeycomb — Best Practices](https://docs.honeycomb.io/send-data/javascript-browser/honeycomb-distribution/) & [OpenTel - Attributes Spec](https://opentelemetry.io/docs/specs/semconv/registry/attributes/))
+*(Source: [Honeycomb — Best Practices](https://docs.honeycomb.io/send-data/javascript-browser/honeycomb-distribution/) & [OpenTel - Attributes Spec](https://opentelemetry.io/docs/specs/semconv/registry/attributes/)) [Add for Named Constants for the SDK: Link for SDK https://github.com/open-telemetry/opentelemetry-js/tree/main/semantic-conventions]
 
 ## [Section 4: Verify the Config Worked in Honeycomb]
 
 **[Visual]**
-Honeycomb trace with new attributes populated.
+Show the code snippet `features.ts` that's setting the feature flag to `false`. then open Web Launchpad. GROUP BY `app.feature.flag.user.questions`. Then FILTER BY `user.id`.
 
 **[Audio]**
-Now, let's verify that her custom attributes are actually being sent to Honeycomb.
+Now, let's verify that her custom resource attributes are actually being sent to Honeycomb. In the code, the `ALLOW_USER_QUESTIONS` feature flag is in `features.ts` in the source directory. It's currently set to `false` by default.
 
-Jess opens Meminator and clicks `GO` a few times to generate fresh traces. Let's go over to Honeycomb and view one of our most recent traces. Select Fields, then search for `user.id` and `feature.flag`. Ah! They're here. 
+Jess runs Meminator with the new config and clicks `Generate Meme!` a few times to generate fresh traces. This is one workflow of Meminator: users can press `Generate Meme` and it will pair an image with a stock phrase.
 
-## [Section 5: Query with Custom Attributes in Honeycomb]
+Then, Jess sets the feature flag to `true`, restarts the application with `./run` and reloads Meminator in her browser. Now she sees the option to type in her own phrase, then presses `GO` to generate fresh traces. This is the second meme generation workflow: users can type in their own phrase, which will be paired with an image.
 
-**[Visual]**
-In Query Builder:
-- VISUALIZE: COUNT
-- GROUP BY: user.id
-- ORDER BY: COUNT DESC
+Now, Jess is looking at the Web Launchpad in Honeycomb. Her first question: How is each variant of her A/B test performing? She starts by grouping her data by `app.feature.flag.user.questions` to see overall system performance split between her control group and expirimental group. Great! She sees the feature flag attribute she instructed in the GROUP BY dropdown. Now, she can see a high-level view of how her new meme generation flow is impacting performance across all users.
 
-**[Audio]**
-Now let's use the new custom attributes to query our data. Let's say Jess wants to figure out who the most active users in Meminator are. First, navigate to the Query Buider. 
-
-Add COUNT to the VISUALIZE clause, then GROUP BY `user.id`. ORDER BY `COUNT DESC` and LIMIT to 5.
-
-This will show you the top 5 most active users by number of events/traces.
-
-## [Section 6: Query with Custom Attributes in Honeycomb]
-
-**[Visual]**
-In Query Builder:
-- VISUALIZE: HEATMAP(duration_ms) 
-- GROUP BY: feature.flag
-
-**[Audio]**
-What if Jess wants to compare performance between users with different feature flags? She can do that now. In the Query Builder, add `HEATMAP(duration_ms)` to the VISUALIZE clause and GROUP BY `feature.flag`.
-
-This shows you if users with different feature flag settings experience different performance.
-
-## [Section 7: Recap]
+If she notices something interesting in the data, she can investigate further by clicking into a specific trace. 
 
 **[Visual]**
 Slide with takeaways.
 
 **[Audio]**
 Let's recap.
-- Custom attributes add useful business context like user IDs and feature flags to your spans.
+- Custom resource attributes add useful business context to your spans.
 - Implementation is simple - just add them to `resourceAttributes` in your `HoneycombWebSDK` config and they'll appear on every span automatically.
 - Follow best practices: use lowercase dot-notation, reuse OpenTelemetry conventions when possible, and avoid personally identifiable information.
 - Always validate - check that your attributes show up in Honeycomb's Fields search before relying on them.
 - They unlock powerful queries: compare performance across feature flags, find your most active users, and debug issues for specific customers.
-
