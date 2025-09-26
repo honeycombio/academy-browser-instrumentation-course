@@ -2,7 +2,7 @@
 
 ## Learning Objectives
 - Add app context to spans in a browser app using OpenTelemetry  
-- Choose semantic, consistent attribute names  
+- Choose semantic, consistent attribute names. When possible reuse existing semantic conventions. Definitions can be found [here](https://opentelemetry.io/docs/specs/semconv/registry/attributes/)  
 - Understand how custom attributes make queries and traces more powerful  
 - Apply privacy and best practice considerations when enriching spans  
 
@@ -34,19 +34,19 @@ import { features } from './features';
 ...
 
 const sdk = new HoneycombWebSDK({
-  apiKey: 'your ingest api key',
-  serviceName: 'react',
-  instrumentations: [getWebAutoInstrumentations({
-    '@opentelemetry/instrumentation-xml-http-request': configDefaults,
-    '@opentelemetry/instrumentation-fetch': configDefaults,
-    '@opentelemetry/instrumentation-document-load': configDefaults,
-  })],
-  resourceAttributes: { // Data in this object is applied to every trace emitted.
-    "app.feature.flag.user.questions": features.ALLOW_USER_QUESTIONS, // Specific to your app.
+    apiKey: 'your ingest api key',
+    serviceName: 'react',
+    instrumentations: [
+        getWebAutoInstrumentations()
+    ],
+    resourceAttributes: { // Data in this object is applied to every trace emitted.
+    "feature_flag.key": "ALLOW_USER_QUESTIONS", // Specific to your app.
+    "feature_flag.result.variant": features.ALLOW_USER_QUESTIONS, // Specific to your app.
   },
 });
 sdk.start();
 ```
+
 *(Source: [Honeycomb — Send Browser Data](https://docs.honeycomb.io/send-data/javascript-browser/honeycomb-distribution/))*  
 
 **[Audio]**
